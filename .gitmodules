@@ -1,0 +1,15 @@
+[submodule "ERAM/vendor/ImGui"]
+	path = ERAM/vendor/ImGui
+	url = https://github.com/Adam92506/ImGui.git
+[submodule "ERAM/vendor/glfw"]
+	path = ERAM/vendor/glfw
+	url = git@github.com:TheCherno/glfw.git
+[submodule "ERAM/vendor/glm"]
+	path = ERAM/vendor/glm
+	url = git@github.com:g-truc/glm.git
+[submodule "ERAM/vendor/spdlog"]
+	path = ERAM/vendor/spdlog
+	url = git@github.com:gabime/spdlog.git
+[submodule "ERAM/vendor/yamlCpp"]
+	path = ERAM/vendor/yamlCpp
+	url = https://github.com/Adam92506/yaml-cpp.git
