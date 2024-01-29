@@ -62,7 +62,11 @@ namespace Eram
 			Timestep timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
-			m_Scope->Run();
+			m_ImGuiWindow->Begin();
+
+			m_Scope->OnUpdate(timestep);
+
+			m_ImGuiWindow->End();
 
 			m_Window->OnUpdate();
 		}

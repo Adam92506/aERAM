@@ -31,10 +31,7 @@ namespace Eram {
 	OpenGLShader::OpenGLShader(const std::string& filepath)
 		: m_Filepath(filepath)
 	{
-		
 		ER_PROFILE_FUNCTION();
-
-		// TODO: Not cause error when file does not exist
 
 		ShaderSource source = PreProcess(filepath);
 		CompileShader(source.VertexSource, source.FragmentSource);
@@ -117,7 +114,7 @@ namespace Eram {
 			glGetShaderiv(m_RendererID, GL_INFO_LOG_LENGTH, &maxLength);
 
 			std::vector<GLchar> infoLog(maxLength);
-			glGetProgramInfoLog(m_RendererID, maxLength, &maxLength, &infoLog[0]);
+			glGetProgramInfoLog(m_RendererID, maxLength, &maxLength, infoLog.data());
 
 			glDeleteProgram(m_RendererID);
 			glDeleteShader(vertexShader);
@@ -138,6 +135,12 @@ namespace Eram {
 		ER_PROFILE_FUNCTION();
 
 		std::ifstream stream(filepath);
+
+		if (stream.fail())
+		{
+			ER_ERROR("Unable to open shader: {0}", filepath.c_str());
+			return { "", "" };
+		}
 
 		enum class ShaderType
 		{
