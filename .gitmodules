@@ -13,3 +13,6 @@
 [submodule "ERAM/vendor/yamlCpp"]
 	path = ERAM/vendor/yamlCpp
 	url = https://github.com/Adam92506/yaml-cpp.git
+[submodule "Eram/vendor/Json"]
+	path = Eram/vendor/Json
+	url = git@github.com:nlohmann/json.git

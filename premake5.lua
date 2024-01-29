@@ -19,6 +19,7 @@ IncludeDir["glm"] = "Eram/vendor/glm"
 IncludeDir["stb_image"] = "Eram/vendor/stb_image"
 IncludeDir["ImGui"] = "Eram/vendor/ImGui/"
 IncludeDir["yamlCpp"] = "Eram/vendor/yamlCpp/include"
+IncludeDir["Json"] = "Eram/vendor/Json/include"
 
 include "Eram/vendor/glfw"
 include "Eram/vendor/glad"
@@ -58,7 +59,8 @@ project "Eram"
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.stb_image}/src",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.yamlCpp}"
+		"%{IncludeDir.yamlCpp}",
+		"%{IncludeDir.Json}"
 	}
 
 	links
