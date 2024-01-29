@@ -3,95 +3,70 @@
 
 #include "Eram/Core/Input.h"
 
-namespace Eram
-{
+namespace Eram {
 
-	CameraController::CameraController()
-		: m_Camera(m_CameraPosition, m_CameraRotation)
+	CameraController::CameraController(float width, float height, float zoomLevel, float rotation)
+		: m_AspectRatio(width / height), m_Width(width), m_Height(height), m_ZoomLevel(zoomLevel), m_Rotation(rotation),
+		m_Camera(m_AspectRatio * m_ZoomLevel, -m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel)
 	{
-		m_Camera.SetViewportSize(1280, 720);
+		m_Camera.SetPosition(m_Position);
+		m_Camera.SetRotation(m_Rotation);
 	}
 
-	CameraController::CameraController(float fov, float aspectRatio, float nearClip, float farClip)
-		: m_Camera(fov, aspectRatio, nearClip, farClip) 
+	void CameraController::OnUpdate(Timestep ts)
 	{
-		m_Camera.SetViewportSize(1280, 720);
+		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+		{
+			if (m_PrevMousePressed)
+			{
+				glm::vec2 mousePosition = Input::GetMousePos();
+				glm::vec2 deltaPosition = (m_PrevMousePosition - mousePosition);
+
+				deltaPosition.x = deltaPosition.x * m_TranslationSpeed * ts / m_Width;
+				deltaPosition.y = deltaPosition.y * m_TranslationSpeed * ts / m_Height;
+
+				m_Position += glm::vec3(deltaPosition.x, -deltaPosition.y, 0.0f);
+				m_Camera.SetPosition(m_Position);
+
+				m_PrevMousePosition = mousePosition;
+				m_PrevMousePressed = true;
+			}
+			
+			else
+			{
+				m_PrevMousePosition = Input::GetMousePos();
+				m_PrevMousePressed = true;
+			}
+		}
+
+		else
+		{
+			m_PrevMousePressed = false;
+		}
 	}
 
 	void CameraController::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowResizeEvent>(ER_BIND_EVENT_FN(CameraController::OnWindowResizeEvent));
+		dispatcher.Dispatch<WindowResizeEvent>(ER_BIND_EVENT_FN(CameraController::OnWindowResized));
 	}
 
 	void CameraController::OnResize(float width, float height)
 	{
-		m_Camera.SetViewportSize(width, height);
+		m_AspectRatio = width / height;
+		m_Width = width;
+		m_Height = height;
+		RecalculateProjection();
+	}
+	
+	void CameraController::RecalculateProjection()
+	{
+		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 	}
 
-	void CameraController::OnUpdate(Timestep ts)
+	bool CameraController::OnWindowResized(WindowResizeEvent& e)
 	{
-		if (Input::IsKeyPressed(Key::A))
-		{
-			m_CameraPosition.x -= cos(glm::radians(m_CameraRotation.y)) * m_CameraTranslationSpeed * ts;
-			m_CameraPosition.z += sin(glm::radians(m_CameraRotation.y)) * m_CameraTranslationSpeed * ts;
-		}
-
-		if (Input::IsKeyPressed(Key::D))
-		{
-			m_CameraPosition.x += cos(glm::radians(m_CameraRotation.y)) * m_CameraTranslationSpeed * ts;
-			m_CameraPosition.z -= sin(glm::radians(m_CameraRotation.y)) * m_CameraTranslationSpeed * ts;
-		}
-
-		if (Input::IsKeyPressed(Key::W))
-		{
-			m_CameraPosition.x -= cos(glm::radians(m_CameraRotation.y - 90.0f)) * m_CameraTranslationSpeed * ts;
-			m_CameraPosition.z += sin(glm::radians(m_CameraRotation.y - 90.0f)) * m_CameraTranslationSpeed * ts;
-		}
-
-		if (Input::IsKeyPressed(Key::S))
-		{
-			m_CameraPosition.x += cos(glm::radians(m_CameraRotation.y - 90.0f)) * m_CameraTranslationSpeed * ts;
-			m_CameraPosition.z -= sin(glm::radians(m_CameraRotation.y - 90.0f)) * m_CameraTranslationSpeed * ts;
-		}
-
-		if (Input::IsKeyPressed(Key::X))
-		{
-			m_CameraPosition.y += m_CameraTranslationSpeed * ts;
-		}
-
-		if (Input::IsKeyPressed(Key::Z))
-		{
-			m_CameraPosition.y -= m_CameraTranslationSpeed * ts;
-		}
-
-		if (Input::IsKeyPressed(Key::Q))
-		{
-			m_CameraRotation.y += m_CameraRotationSpeed * ts;
-		}
-
-		if (Input::IsKeyPressed(Key::E))
-		{
-			m_CameraRotation.y -= m_CameraRotationSpeed * ts;
-		}
-
-		if (Input::IsKeyPressed(Key::R))
-		{
-			m_CameraRotation.x += m_CameraRotationSpeed * ts;
-		}
-
-		if (Input::IsKeyPressed(Key::F))
-		{
-			m_CameraRotation.x -= m_CameraRotationSpeed * ts;
-		}
-
-		m_Camera.SetPosition(m_CameraPosition);
-		m_Camera.SetRotation(m_CameraRotation);
-	}
-
-	bool CameraController::OnWindowResizeEvent(WindowResizeEvent& e)
-	{
-		OnResize((float)e.GetWidth(), (float)e.GetHeight());
+		OnResize(e.GetWidth(), e.GetHeight());
 		return false;
 	}
 
