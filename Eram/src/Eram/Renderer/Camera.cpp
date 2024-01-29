@@ -1,51 +1,36 @@
 #include "erpch.h"
 #include "Camera.h"
 
-#include "Eram/Core/Input.h"
-#include "Eram/Core/KeyCodes.h"
-
-#include <GLFW/glfw3.h>
-
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace Eram
 {
 
-	Camera::Camera()
-		: m_FOV(45.0f), m_AspectRatio(1.778f), m_NearClip(0.1f), m_FarClip(1000.0f), m_Projection(glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip))
+	Camera::Camera(float left, float right, float bottom, float top)
+		: m_ProjectionMatrix(glm::ortho(left, right, bottom, top, -1.0f, 1.0f)), m_ViewMatrix(1.0f)
 	{
-		UpdateView();
+		ER_PROFILE_FUNCTION();
+
+		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 	}
 
-	Camera::Camera(glm::vec3 position, glm::vec3 rotation)
-		: m_FOV(45.0f), m_AspectRatio(1.778f), m_NearClip(0.1f), m_FarClip(1000.0f), m_Projection(glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip)), m_Position(position), m_Rotation(rotation)
+	void Camera::SetProjection(float left, float right, float bottom, float top)
 	{
-		UpdateView();
+		ER_PROFILE_FUNCTION();
+
+		m_ProjectionMatrix = glm::ortho(left, right, bottom, top, -1.0f, 1.0f);
+		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 	}
 
-	Camera::Camera(float fov, float aspectRatio, float nearClip, float farClip)
-		: m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip), m_Projection(glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip))
+	void Camera::RecalculateViewMatrix()
 	{
-		UpdateView();
-	}
+		ER_PROFILE_FUNCTION();
 
-	void Camera::UpdateProjection()
-	{
-		m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
-		m_Projection = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
-	}
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), m_Position) *
+			glm::rotate(glm::mat4(1.0f), -glm::radians(m_Rotation), glm::vec3(0, 0, 1));
 
-	void Camera::UpdateView()
-	{
-		glm::quat orientation = GetOrientation();
-		m_ViewMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(orientation);
-		m_ViewMatrix = glm::inverse(m_ViewMatrix);
-	}
-
-	glm::quat Camera::GetOrientation() const
-	{
-		return glm::quat(glm::radians(m_Rotation));
+		m_ViewMatrix = glm::inverse(transform);
+		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 	}
 
 }
