@@ -15,17 +15,20 @@ namespace Eram {
 
 	void CameraController::OnUpdate(Timestep ts)
 	{
-		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+		if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 		{
 			if (m_PrevMousePressed)
 			{
 				glm::vec2 mousePosition = Input::GetMousePos();
 				glm::vec2 deltaPosition = (m_PrevMousePosition - mousePosition);
 
-				deltaPosition.x = deltaPosition.x * m_TranslationSpeed * ts / m_Width;
-				deltaPosition.y = deltaPosition.y * m_TranslationSpeed * ts / m_Height;
+				deltaPosition.x = deltaPosition.x * m_TranslationSpeed * ts * m_ZoomLevel;
+				deltaPosition.y = deltaPosition.y * m_TranslationSpeed * ts * m_ZoomLevel;
 
-				m_Position += glm::vec3(deltaPosition.x, -deltaPosition.y, 0.0f);
+				glm::mat4 viewProjection = m_Camera.GetViewProjectionMatrix();
+				glm::vec4 position = glm::vec4(deltaPosition.x, deltaPosition.y, 0.0f, 0.0f) * viewProjection;
+
+				m_Position += glm::vec3(position.x, -position.y, 0.0f);
 				m_Camera.SetPosition(m_Position);
 
 				m_PrevMousePosition = mousePosition;
@@ -49,6 +52,7 @@ namespace Eram {
 	{
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowResizeEvent>(ER_BIND_EVENT_FN(CameraController::OnWindowResized));
+		dispatcher.Dispatch<MouseScrolledEvent>(ER_BIND_EVENT_FN(CameraController::OnMouseScrolled));
 	}
 
 	void CameraController::OnResize(float width, float height)
@@ -64,9 +68,18 @@ namespace Eram {
 		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 	}
 
+	bool CameraController::OnMouseScrolled(MouseScrolledEvent& e)
+	{
+		m_ZoomLevel -= e.GetYOffset() * m_ZoomSpeed;
+		RecalculateProjection();
+
+		return false;
+	}
+
 	bool CameraController::OnWindowResized(WindowResizeEvent& e)
 	{
 		OnResize(e.GetWidth(), e.GetHeight());
+
 		return false;
 	}
 

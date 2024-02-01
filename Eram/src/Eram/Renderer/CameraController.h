@@ -30,6 +30,7 @@ namespace Eram {
 		float GetRotation() const { return m_Rotation; }
 		void SetRotation(float rotation) { m_Rotation = rotation; m_Camera.SetRotation(rotation); }
 	private:
+		bool OnMouseScrolled(MouseScrolledEvent& e);
 		bool OnWindowResized(WindowResizeEvent& e);
 	private:
 		Camera m_Camera;
@@ -39,11 +40,12 @@ namespace Eram {
 		float m_ZoomLevel;
 
 		float m_Rotation;
-		glm::vec3 m_Position = { 40.74488780507533f, -74.24515365415176f, 0.0f };
-		glm::vec2 m_PrevMousePosition = {0.0f, 0.0f};
+		glm::vec3 m_Position = { -74.24515365415176f, 40.74488780507533f, 0.0f };
+		glm::vec2 m_PrevMousePosition = { 0.0f, 0.0f };
 		bool m_PrevMousePressed = false;
 
-		float m_TranslationSpeed = 500.0f;
+		float m_TranslationSpeed = 2.5f;
+		float m_ZoomSpeed = 0.5f;
 	};
 
 }

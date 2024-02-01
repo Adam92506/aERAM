@@ -48,6 +48,11 @@ namespace Eram
 		uint32_t LineVertexCount;
 		LineVertex* LineVertexBufferBase = nullptr;
 		LineVertex* LineVertexBufferPtr = nullptr;
+
+		// Stats
+		uint32_t DrawCalls = 0;
+		uint32_t LineCount = 0;
+		uint32_t QuadCount = 0;
 	};
 
 	static RendererData s_Data;
@@ -139,6 +144,10 @@ namespace Eram
 	{
 		ER_PROFILE_FUNCTION();
 
+		s_Data.DrawCalls = 0;
+		s_Data.QuadCount = 0;
+		s_Data.LineCount = 0;
+
 		Flush();
 	}
 
@@ -153,6 +162,8 @@ namespace Eram
 
 			s_Data.QuadShader->Bind();
 			RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
+
+			s_Data.DrawCalls++;
 		}
 
 		if (s_Data.LineVertexCount)
@@ -163,6 +174,8 @@ namespace Eram
 			s_Data.LineShader->Bind();
 			RenderCommand::SetLineWidth(s_Data.LineWidth);
 			RenderCommand::DrawLines(s_Data.LineVertexArray, s_Data.LineVertexCount);
+
+			s_Data.DrawCalls++;
 		}
 	}
 
@@ -216,6 +229,8 @@ namespace Eram
 		s_Data.QuadVertexBufferPtr++;
 
 		s_Data.QuadIndexCount += 6;
+
+		s_Data.QuadCount++;
 	}
 
 	void Renderer::DrawLine(const glm::vec2& p0, const glm::vec2& p1, const glm::vec4& color)
@@ -234,6 +249,23 @@ namespace Eram
 		s_Data.LineVertexBufferPtr++;
 
 		s_Data.LineVertexCount += 2;
+
+		s_Data.LineCount++;
+	}
+
+	uint32_t Renderer::GetDrawCallCount()
+	{
+		return s_Data.DrawCalls;
+	}
+
+	uint32_t Renderer::GetQuadCount()
+	{
+		return s_Data.QuadCount;
+	}
+
+	uint32_t Renderer::GetLineCount()
+	{
+		return s_Data.LineCount;
 	}
 
 }
